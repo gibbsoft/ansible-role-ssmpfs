@@ -1,0 +1,58 @@
+# ansible-role-ssmpfs_reader
+# Copyright (C) 2022 Nigel Gibbs, Gibbsoft Ltd
+#
+# This file is part of ansible-role-ssmpfs_reader.
+#
+# ansible-role-ssmpfs_reader is free software: you can redistribute it and/or modify
+# it under the terms of the GNU General Public License as published by
+# the Free Software Foundation, either version 3 of the License, or
+# (at your option) any later version.
+#
+# ansible-role-ssmpfs_reader is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+# GNU General Public License for more details.
+#
+# You should have received a copy of the GNU General Public License
+# along with ansible-role-ssmpfs_reader.  If not, see <https://www.gnu.org/licenses/>.
+
+---
+- fail:
+    msg: variable 'key' is not defined
+  when: key is not defined
+
+- name: Look up the SSM key recursively {{ key }}
+  set_fact:
+    ssmpfs_reader_ssmpr: "{% for k in range(1,len_plus | int) %}{{ var[k~'-of-'~len] }}{% endfor %}"
+  vars:
+    var: "{{ lookup('aws_ssm', key, bypath=true, recursive=true, shortnames=true) }}"
+    len: "{{ var | length }}"
+    len_plus: "{{ len | int + 1 }}"
+  tags:
+    - deploy
+    - ssm
+
+- name: Look up the SSM key non-recursively {{ key }}
+  set_fact:
+    ssmpfs_reader_ssmpnr: "{{ lookup('aws_ssm', key, bypath=false, recursive=false, shortnames=true) }}"
+  tags:
+    - deploy
+    - ssm
+  when: ssmpfs_reader_ssmpr |length == 0
+
+- name: Render SSM parameter to file
+  copy:
+    dest: "{{ dest }}"
+    content: "{% if ssmpfs_reader_ssmpnr is defined and ssmpfs_reader_ssmpnr | length>0 %}{{ ssmpfs_reader_ssmpnr }}{% else %}{{ ssmpfs_reader_ssmpr }}{% endif %}"
+  tags:
+    - deploy
+    - ssm
+  when: dest is defined and dest |length>0
+
+- name: Render SSM parameter to fact
+  set_fact:
+    "{{ set_fact }}": "{% if ssmpfs_reader_ssmpnr is defined and ssmpfs_reader_ssmpnr | length>0 %}{{ ssmpfs_reader_ssmpnr }}{% else %}{{ ssmpfs_reader_ssmpr }}{% endif %}"
+  tags:
+    - deploy
+    - ssm
+  when: set_fact is defined and set_fact |length>0
