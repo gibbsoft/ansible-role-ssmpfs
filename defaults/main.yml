@@ -1,0 +1,4 @@
+ssmpfs_file_backup: false
+ssmpfs_file_follow: false
+ssmpfs_file_force: false
+ssmpfs_file_mode: ''

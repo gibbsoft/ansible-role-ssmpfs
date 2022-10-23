@@ -1,29 +1,30 @@
-# ansible-role-ssmpfs_reader
+# ansible-role-ssmpfs
 # Copyright (C) 2022 Nigel Gibbs, Gibbsoft Ltd
 #
-# This file is part of ansible-role-ssmpfs_reader.
+# This file is part of ansible-role-ssmpfs.
 #
-# ansible-role-ssmpfs_reader is free software: you can redistribute it and/or modify
+# ansible-role-ssmpfs is free software: you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
 # the Free Software Foundation, either version 3 of the License, or
 # (at your option) any later version.
 #
-# ansible-role-ssmpfs_reader is distributed in the hope that it will be useful,
+# ansible-role-ssmpfs is distributed in the hope that it will be useful,
 # but WITHOUT ANY WARRANTY; without even the implied warranty of
 # MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
 # GNU General Public License for more details.
 #
 # You should have received a copy of the GNU General Public License
-# along with ansible-role-ssmpfs_reader.  If not, see <https://www.gnu.org/licenses/>.
+# along with ansible-role-ssmpfs.  If not, see <https://www.gnu.org/licenses/>.
 
 ---
-- fail:
+- name: Fail if key not set
+  ansible.builtin.fail:
     msg: variable 'key' is not defined
   when: key is not defined
 
 - name: Look up the SSM key recursively {{ key }}
-  set_fact:
-    ssmpfs_reader_ssmpr: "{% for k in range(1,len_plus | int) %}{{ var[k~'-of-'~len] }}{% endfor %}"
+  ansible.builtin.set_fact:
+    ssmpfs_ssmpr: "{% for k in range(1,len_plus | int) %}{{ var[k~'-of-'~len] }}{% endfor %}"
   vars:
     var: "{{ lookup('aws_ssm', key, bypath=true, recursive=true, shortnames=true) }}"
     len: "{{ var | length }}"
@@ -33,26 +34,30 @@
     - ssm
 
 - name: Look up the SSM key non-recursively {{ key }}
-  set_fact:
-    ssmpfs_reader_ssmpnr: "{{ lookup('aws_ssm', key, bypath=false, recursive=false, shortnames=true) }}"
+  ansible.builtin.set_fact:
+    ssmpfs_ssmpnr: "{{ lookup('aws_ssm', key, bypath=false, recursive=false, shortnames=true) }}"
   tags:
     - deploy
     - ssm
-  when: ssmpfs_reader_ssmpr |length == 0
+  when: ssmpfs_ssmpr | length == 0
 
 - name: Render SSM parameter to file
-  copy:
-    dest: "{{ dest }}"
-    content: "{% if ssmpfs_reader_ssmpnr is defined and ssmpfs_reader_ssmpnr | length>0 %}{{ ssmpfs_reader_ssmpnr }}{% else %}{{ ssmpfs_reader_ssmpr }}{% endif %}"
+  ansible.builtin.copy:
+    dest: '{{ dest }}'
+    backup: '{{ ssmpfs_file_backup }}'
+    follow: '{{ ssmpfs_file_follow }}'
+    force: '{{ ssmpfs_file_force }}'
+    mode: '{{ ssmpfs_file_mode }}'
+    content: "{% if ssmpfs_ssmpnr is defined and ssmpfs_ssmpnr | length > 0 %}{{ ssmpfs_ssmpnr }}{% else %}{{ ssmpfs_ssmpr }}{% endif %}"
   tags:
     - deploy
     - ssm
-  when: dest is defined and dest |length>0
+  when: dest is defined and dest | length > 0
 
 - name: Render SSM parameter to fact
-  set_fact:
-    "{{ set_fact }}": "{% if ssmpfs_reader_ssmpnr is defined and ssmpfs_reader_ssmpnr | length>0 %}{{ ssmpfs_reader_ssmpnr }}{% else %}{{ ssmpfs_reader_ssmpr }}{% endif %}"
+  ansible.builtin.set_fact:
+    "{{ set_fact }}": "{% if ssmpfs_ssmpnr is defined and ssmpfs_ssmpnr | length > 0 %}{{ ssmpfs_ssmpnr }}{% else %}{{ ssmpfs_ssmpr }}{% endif %}"
   tags:
     - deploy
     - ssm
-  when: set_fact is defined and set_fact |length>0
+  when: set_fact is defined and set_fact | length > 0

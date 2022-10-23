@@ -1,24 +1,25 @@
-# ansible-role-ssmpfs_reader
+# ansible-role-ssmpfs
 # Copyright (C) 2022 Nigel Gibbs, Gibbsoft Ltd
 #
-# This file is part of ansible-role-ssmpfs_reader.
+# This file is part of ansible-role-ssmpfs.
 #
-# ansible-role-ssmpfs_reader is free software: you can redistribute it and/or modify
+# ansible-role-ssmpfs is free software: you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
 # the Free Software Foundation, either version 3 of the License, or
 # (at your option) any later version.
 #
-# ansible-role-ssmpfs_reader is distributed in the hope that it will be useful,
+# ansible-role-ssmpfs is distributed in the hope that it will be useful,
 # but WITHOUT ANY WARRANTY; without even the implied warranty of
 # MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
 # GNU General Public License for more details.
 #
 # You should have received a copy of the GNU General Public License
-# along with ansible-role-ssmpfs_reader.  If not, see <https://www.gnu.org/licenses/>.
+# along with ansible-role-ssmpfs.  If not, see <https://www.gnu.org/licenses/>.
 
 ---
 galaxy_info:
-  role_name: ssmpfs_reader
+  role_name: ssmpfs
+  namespace: gibbsoft
   author: Nigel Gibbs
   description: Read AWS SSM Parameters create by Terraform module [ssmpfs](https://registry.terraform.io/modules/gibbsoft/ssmpfs/aws/latest)
   company: Gibbosft Ltd

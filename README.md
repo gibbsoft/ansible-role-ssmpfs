@@ -1,4 +1,4 @@
-# Ansible Role: ssmpfs_reader
+# Ansible Role: ssmpfs
 
 An Ansible role that reads AWS SSM Parameters create by Terraform module [ssmpfs](https://registry.terraform.io/modules/gibbsoft/ssmpfs/aws/latest).
 
@@ -11,6 +11,10 @@ Available variables are listed below:
 | `key`          | n/a         | Y | A key to lookup in SSM Parameter Store                                                  |
 | `set_fact`     | n/a         | N | The name of a fact to set with the contents of the SSM param read from `key`            |
 | `dest`         | n/a         | N | Destination path of file to populate with the contents of the SSM param read from `key` |
+| `ssmpfs_file_backup`         | `false`         | N | Used with `dest`. Should target file be backed up if already exists?  |
+| `ssmpfs_file_follow`         | `false`         | N | Used with `dest`. This flag indicates that filesystem links in the destination, if they exist, should be followed  |
+| `ssmpfs_file_force`         | `false`         | N | Used with `dest`. Influence whether the remote file must always be replaced  |
+| `ssmpfs_file_mode`         | `''`         | N | Used with `dest`. The permissions of the destination file or directory. |
 
 > NB: You can pass either or both `set_fact` and `dest`, but one at least one of these should be used.
 
@@ -32,7 +36,7 @@ The ansible call to the role may look something like this:
 
 ```yaml
   roles:
-    - role: gibbsoft.ssmpfs_reader
+    - role: gibbsoft.ssmpfs
       key: /LoremIpsum
       dest: output.txt
 ```
@@ -45,7 +49,7 @@ You can set a new fact containing secret retrieved from the SSM Parameter.  In t
 
 ```yaml
   roles:
-    - role: gibbsoft.ssmpfs_reader
+    - role: gibbsoft.ssmpfs
       key: "/demo/slack/endpoint"
       set_fact: slack_endpoint
 ```
